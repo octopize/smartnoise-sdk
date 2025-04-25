@@ -1,9 +1,7 @@
-from collections import namedtuple
 import numpy as np
 import torch
-from torch import optim
-from torch import nn
 import torch.utils.data
+from torch import nn, optim
 from torch.nn import (
     BatchNorm1d,
     Dropout,
@@ -14,14 +12,11 @@ from torch.nn import (
     Sequential,
     Sigmoid,
 )
-import warnings
 
-import opacus
 from snsynth.base import Synthesizer
 
-from snsynth.transform.table import TableTransformer
-from .ctgan.data_sampler import DataSampler
 from .ctgan.ctgan import CTGANSynthesizer
+from .ctgan.data_sampler import DataSampler
 
 
 class Discriminator(Module):
@@ -210,6 +205,7 @@ class DPCTGAN(CTGANSynthesizer, Synthesizer):
         self._transformer = None
         self._data_sampler = None
         self._generator = None
+        import opacus
 
         if self.loss != "cross_entropy":
             # Monkeypatches the _create_or_extend_grad_sample function when calling opacus
@@ -228,6 +224,8 @@ class DPCTGAN(CTGANSynthesizer, Synthesizer):
         preprocessor_eps=0.0,
         nullable=False,
     ):
+        import opacus
+
         if update_epsilon:
             self.epsilon = update_epsilon
 
