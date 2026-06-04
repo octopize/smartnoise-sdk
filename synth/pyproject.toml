@@ -13,9 +13,12 @@ readme = "README.md"
 python = ">=3.9,<3.13"
 opacus = {version="^0.14.0", optional=true}
 torch = {version = ">=2.2.0", optional = true}
-pac-synth = "^0.0.8"
+pac-synth = {version = "^0.0.8", optional = true}
 smartnoise-sql = "^1.0.5"
 Faker = ">=17.0.0"
+
+[tool.poetry.extras]
+pacsynth = ["pac-synth"]
 
 [tool.poetry.dev-dependencies]
 
