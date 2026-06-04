@@ -1,14 +1,21 @@
 import pandas as pd
 import numpy as np
 
-from pacsynth import (
-    DpAggregateSeededSynthesizer,
-    DpAggregateSeededParametersBuilder,
-    AccuracyMode,
-    FabricationMode,
-)
-from pacsynth import Dataset as AggregateSeededDataset
 from snsynth.base import Synthesizer
+
+
+def _require_pacsynth():
+    """Import pac-synth lazily so that the module can be loaded on platforms
+    where pac-synth has no pre-built wheel (e.g. linux/arm64) as long as
+    AggregateSeededSynthesizer is never instantiated."""
+    try:
+        import pacsynth
+        return pacsynth
+    except ImportError as e:
+        raise ImportError(
+            "pac-synth is required to use AggregateSeededSynthesizer but is not installed. "
+            "Install it with: pip install smartnoise-synth[pacsynth]"
+        ) from e
 
 
 """
@@ -65,9 +72,9 @@ class AggregateSeededSynthesizer(Synthesizer):
         delta=None,
         percentile_percentage=99,
         percentile_epsilon_proportion=0.01,
-        accuracy_mode=AccuracyMode.prioritize_long_combinations(),
+        accuracy_mode=None,
         number_of_records_epsilon_proportion=0.005,
-        fabrication_mode=FabricationMode.uncontrolled(),
+        fabrication_mode=None,
         empty_value="",
         use_synthetic_counts=False,
         weight_selection_percentile=95,
@@ -79,6 +86,11 @@ class AggregateSeededSynthesizer(Synthesizer):
 
         For more information about the parameters run `help('pacsynth.DpAggregateSeededParametersBuilder')`.
         """
+        pacsynth = _require_pacsynth()
+        if accuracy_mode is None:
+            accuracy_mode = pacsynth.AccuracyMode.prioritize_long_combinations()
+        if fabrication_mode is None:
+            fabrication_mode = pacsynth.FabricationMode.uncontrolled()
         self.epsilon = epsilon
         self.delta = delta
         self.reporting_length = reporting_length
@@ -96,8 +108,9 @@ class AggregateSeededSynthesizer(Synthesizer):
         self.build_synthesizer()
 
     def build_synthesizer(self):
+        pacsynth = _require_pacsynth()
         builder = (
-            DpAggregateSeededParametersBuilder()
+            pacsynth.DpAggregateSeededParametersBuilder()
             .reporting_length(self.reporting_length)
             .epsilon(self.epsilon)
             .percentile_percentage(self.percentile_percentage)
@@ -120,7 +133,7 @@ class AggregateSeededSynthesizer(Synthesizer):
 
         self.reporting_length = self.reporting_length
         self.parameters = builder.build()
-        self.synth = DpAggregateSeededSynthesizer(self.parameters)
+        self.synth = pacsynth.DpAggregateSeededSynthesizer(self.parameters)
         self.dataset = None
         self.pandas = False
 
@@ -196,16 +209,20 @@ class AggregateSeededSynthesizer(Synthesizer):
 
 
         if isinstance(data, list) and all(map(lambda row: isinstance(row, list), data)):
-            self.dataset = AggregateSeededDataset(
+            pacsynth = _require_pacsynth()
+            self.dataset = pacsynth.Dataset(
                 data, use_columns=use_columns, sensitive_zeros=sensitive_zeros
             )
             self.pandas = False
         elif isinstance(data, pd.DataFrame):
-            self.dataset = AggregateSeededDataset.from_data_frame(
+            pacsynth = _require_pacsynth()
+            self.dataset = pacsynth.Dataset.from_data_frame(
                 data, use_columns=use_columns, sensitive_zeros=sensitive_zeros
             )
             self.pandas = True
-        elif isinstance(data, AggregateSeededDataset):
+        elif hasattr(data, "get_aggregates"):
+            # pacsynth.Dataset instance — duck-type check avoids importing
+            # pac-synth just to do the isinstance test
             self.dataset = data
             self.pandas = False
         else:
@@ -240,7 +257,7 @@ class AggregateSeededSynthesizer(Synthesizer):
             return result
 
         if self.pandas is True:
-            result = AggregateSeededDataset.raw_data_to_data_frame(result)
+            result = _require_pacsynth().Dataset.raw_data_to_data_frame(result)
 
         return result
 
