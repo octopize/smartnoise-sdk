@@ -1,3 +1,18 @@
+# SmartNoise Synth v1.0.8 Release Notes
+
+* Switch the `mbi` dependency to the published PyPI release series so `smartnoise-synth` can be uploaded to PyPI.
+
+# SmartNoise Synth v1.0.7 Release Notes
+
+* Update AIM and MST to use the latest MBI build and package the dependency directly (thanks, @tjh2822!)
+* Switch to SmartNoise SQL v1.0.10.
+* Support OpenDP >=0.14.1,<0.15 by tightening floating-point domains to reject implicit `NaN` values (thanks, @LancelotMarti!)
+* Fix `BinTransformer` so values at the declared upper bound map into the last bin.
+
+# SmartNoise Synth v1.0.6 Release Notes
+
+* Fix privacy leak in covariance (thanks, @tudorcebere!)
+
 # SmartNoise Synth v1.0.5 Release Notes
 
 * Upgrade to OpenDP v0.12.0

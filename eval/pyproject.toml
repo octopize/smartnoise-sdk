@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "smartnoise-eval"
-version = "0.3.0"
+version = "0.3.1"
 description = "Evaluation of differentially private tabular data"
 authors = ["SmartNoise Team <smartnoise@opendp.org>"]
 license = "MIT"
@@ -10,7 +10,7 @@ repository = "https://github.com/opendp/smartnoise-sdk"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.13"
+python = ">=3.10,<3.15"
 pyspark = "^3.5.0"
 numpy = "^1.26.1"
 
