@@ -22,9 +22,6 @@ disjoint-set = "^0.9.0"
 [tool.poetry.extras]
 pacsynth = ["pac-synth"]
 
-[tool.poetry.extras]
-pacsynth = ["pac-synth"]
-
 [tool.poetry.dev-dependencies]
 
 [build-system]
